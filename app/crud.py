@@ -13,8 +13,8 @@ def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
 
-def get_users(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.User).offset(skip).limit(limit).all()
+# def get_users(db: Session, skip: int = 0, limit: int = 100):
+#     return db.query(models.User).offset(skip).limit(limit).all()
 
 
 def add_default_data(db: Session, id: int):
@@ -50,13 +50,30 @@ def create_user(db: Session, user: schemas.UserCreate):
         return db_user
 
 
-def get_current_temperature(db: Session, user_id: int):
+def get_current_temperature(db: Session, user_id: int, password: str):
+    user = db.query(models.User).filter(models.User.id == user_id).one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=404, detail="User not found")
+    if not Hasher.verify_password(password, user.hashed_password):
+        raise HTTPException(
+            status_code=403, detail="Password missmatch")
     return db.query(models.CurrentTemperature).filter(models.CurrentTemperature.owner_id == user_id).all()
 
 
-def update_current_temperature(db: Session, data: schemas.CurTemp, user_id: int):
+def update_current_temperature(db: Session, data: schemas.CurTemp, user_id: int, password: str):
     user_data = db.query(models.CurrentTemperature).filter(
         models.CurrentTemperature.owner_id == user_id).one_or_none()
+    user = db.query(models.User).filter(models.User.id == user_id).one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=404, detail="User not found")
+    if not Hasher.verify_password(password, user.hashed_password):
+        raise HTTPException(
+            status_code=403, detail="Password missmatch")
+
     if not user_data:
         raise HTTPException(
             status_code=404, detail="Current data for user not found")
