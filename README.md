@@ -2,9 +2,10 @@
 
 ### Environment
 `DATABASE_URL='postgresql://postgres:password@host/data'`
+
 `MASTER_TOKEN=<master token for add/list users>`
 ### Add user
-``` shell
+``` bash
 $ curl -X 'POST' \
   'http://localhost:8080/api/v1/create_user/' \
   -H 'accept: application/json' \
@@ -17,9 +18,9 @@ $ curl -X 'POST' \
 ```
 
 ### Update data
-``` shell
+``` bash
 $ curl -X 'PATCH' \
-  'http://localhost:8080/update_cur_temp/<user_id>' \
+  'http://localhost:8080/update_cur_data/<user_id>' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -H 'Token: <password>' \
@@ -30,7 +31,7 @@ $ curl -X 'PATCH' \
 }'
 ```
 ### Get user
-```shell
+```bash
 $ curl -X 'GET' \
   'http://localhost:8080/api/v1/users/<user_id>' \
   -H 'Token: <master_token>'
@@ -39,6 +40,6 @@ $ curl -X 'GET' \
 ### Get current data for user
 ```shell
 $ curl -X 'GET' \
-  'http://localhost:8080/api/v1/get_cur_temp/<user_id>' \
+  'http://localhost:8080/api/v1/get_cur_data/<user_id>' \
   -H 'Token: <password>'
 ```

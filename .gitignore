@@ -1,6 +1,4 @@
 __pycache__
-include
-bin
-lib
-lib64
-pyvenv.cfg
+venv
+pg_data
+docker-compose.yaml

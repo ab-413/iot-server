@@ -1,8 +1,5 @@
-bin
-include
-lib
-lib64
-.env
+venv
+pg_data
 .gitignore
-docker-compose.yml
-pyvenv.cfg
+docker-compose.yaml
+README.md

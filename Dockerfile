@@ -1,8 +1,10 @@
-FROM python:3.10
+FROM python:3.10-alpine
 
 WORKDIR /app/
 
 ENV PYTHONPATH=/app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 COPY ./app /app/app
 COPY ./requirements.txt /app/

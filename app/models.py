@@ -1,7 +1,5 @@
 from sqlalchemy import Boolean, DateTime, Column, ForeignKey, Integer, String, JSON
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-
 from .database import Base
 
 
@@ -10,19 +8,29 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
+    telegram_id = Column(String)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
 
-    cur_temperature = relationship(
-        "CurrentTemperature", back_populates="owner")
+    current_data = relationship(
+        "CurrentData", back_populates="owner")
 
 
-class CurrentTemperature(Base):
-    __tablename__ = "cur_temperature"
+class CurrentData(Base):
+    __tablename__ = "current_data"
 
     id = Column(Integer, primary_key=True, index=True)
     data = Column(JSON)
     owner_id = Column(Integer, ForeignKey("users.id"))
-    datetime = Column(DateTime(timezone=True), onupdate=func.now())
+    datetime = Column(DateTime(timezone=True))
 
-    owner = relationship("User", back_populates="cur_temperature")
+    owner = relationship("User", back_populates="current_data")
+
+
+class ArchiveData(Base):
+    __tablename__ = "archive_data"
+
+    id = Column(Integer, primary_key=True, index=True)
+    data = Column(JSON)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    datetime = Column(DateTime(timezone=True))

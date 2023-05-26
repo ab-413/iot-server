@@ -1,20 +1,19 @@
 from fastapi import Depends, FastAPI, HTTPException, Request
 from sqlalchemy.orm import Session
-from . import crud, models, schemas
-from .database import SessionLocal, engine
+from app import crud, models, schemas
+from app.database import SessionLocal, engine
 from json.decoder import JSONDecodeError
-import sched
-import time
-import uvicorn
 import os
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-SUPER_TOKEN = os.getenv("MASTER_TOKEN")
+MASTER_TOKEN = os.getenv("MASTER_TOKEN")
 
 # Dependency
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -25,19 +24,27 @@ def get_db():
 # GET methods
 
 
-# @app.get("/api/v1/users/", response_model=list[schemas.User])
-# def read_users(skip: int = 0,  limit: int = 100,  db: Session = Depends(get_db)):
-#     users = crud.get_users(db, skip=skip, limit=limit)
-#     return users
-
-
-@app.get("/api/v1/users/{user_id}", response_model=schemas.User)
-async def read_user(user_id: int, request: Request, db: Session = Depends(get_db)):
+@app.get("/api/v1/users/all", response_model=list[schemas.User])
+async def get_all_users(request: Request, db: Session = Depends(get_db)):
     token = request.headers.get('Token')
     if token is None:
         raise HTTPException(
             status_code=406, detail="No Token provided.")
-    elif token != SUPER_TOKEN:
+    elif token != MASTER_TOKEN:
+        raise HTTPException(
+            status_code=403, detail="Token missmatch")
+    else:
+        db_user = crud.get_users(db)
+        return db_user
+
+
+@app.get("/api/v1/users/{user_id}", response_model=schemas.User)
+async def get_user(user_id: int, request: Request, db: Session = Depends(get_db)):
+    token = request.headers.get('Token')
+    if token is None:
+        raise HTTPException(
+            status_code=406, detail="No Token provided.")
+    elif token != MASTER_TOKEN:
         raise HTTPException(
             status_code=403, detail="Token missmatch")
     else:
@@ -47,21 +54,37 @@ async def read_user(user_id: int, request: Request, db: Session = Depends(get_db
         return db_user
 
 
-@app.get("/api/v1/get_cur_temp/{user_id}")
-async def read_cur_temp(user_id: int, request: Request, db: Session = Depends(get_db)):
+@app.get("/api/v1/tg_users/{user_id}", response_model=schemas.User)
+async def get_user_by_chat_id(user_id: str, request: Request, db: Session = Depends(get_db)):
+    token = request.headers.get('Token')
+    if token is None:
+        raise HTTPException(
+            status_code=406, detail="No Token provided.")
+    elif token != MASTER_TOKEN:
+        raise HTTPException(
+            status_code=403, detail="Token missmatch")
+    else:
+        db_user = crud.get_user_by_chat_id(db, telegram_id=user_id)
+        if db_user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        return db_user
+
+
+@app.get("/api/v1/get_data/{user_id}")
+async def read_current_data(user_id: int, request: Request, db: Session = Depends(get_db)):
     password = request.headers.get('Token')
     if password is None:
         raise HTTPException(
-            status_code=406, detail="No Token provided.")    
+            status_code=406, detail="No Token provided.")
     else:
-        cur_temp = crud.get_current_temperature(db, user_id=user_id, password=password)
-        return cur_temp
+        current_data = crud.get_current_data(
+            db, user_id=user_id, password=password)
+        return current_data
+
 
 # PATCH, POST methods
-
-
-@app.patch("/api/v1/update_cur_temp/{user_id}")
-async def update_cur_temperature_for_user(user_id: int, request: Request, db: Session = Depends(get_db)):
+@app.patch("/api/v1/update_data/{user_id}")
+async def update_current_data_for_user(user_id: int, request: Request, db: Session = Depends(get_db)):
     content_type = request.headers.get('Content-Type')
     password = request.headers.get('Token')
 
@@ -74,7 +97,7 @@ async def update_cur_temperature_for_user(user_id: int, request: Request, db: Se
     elif content_type == 'application/json':
         try:
             json = await request.json()
-            return crud.update_current_temperature(db=db, data=json, user_id=user_id, password=password)
+            return crud.update_current_data(db=db, data=json, user_id=user_id, password=password)
         except JSONDecodeError:
             raise HTTPException(status_code=400, detail="Invalid JSON data.")
     else:
@@ -88,7 +111,7 @@ async def create_user(user: schemas.UserCreate, request: Request, db: Session = 
     if token is None:
         raise HTTPException(
             status_code=406, detail="No Token provided.")
-    elif token != SUPER_TOKEN:
+    elif token != MASTER_TOKEN:
         raise HTTPException(
             status_code=403, detail="Token missmatch")
     else:

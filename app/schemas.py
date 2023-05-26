@@ -22,10 +22,13 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     username: str
     password: str
+    telegram_id: str
 
 
 class User(UserBase):
     id: int
+    username: str
+    telegram_id: str
     is_active: bool
 
     class Config:
