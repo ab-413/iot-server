@@ -6,21 +6,22 @@
 `MASTER_TOKEN=<master token for add/list users>`
 ### Add user
 ``` bash
-$ curl -X 'POST' \
-  'http://localhost:8080/api/v1/create_user/' \
+curl -X 'POST' \
+  'http://<server>:8080/api/v1/create_user/' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
-  -H 'Token: <master_token>' \
+  -H 'Token: <MASTER_TOKEN>' \
   -d '{
   "username": "user",
-  "password": "password"
+  "password": "password",
+  "telegram_id": "123456789"
 }'
 ```
 
 ### Update data
 ``` bash
 $ curl -X 'PATCH' \
-  'http://localhost:8080/update_cur_data/<user_id>' \
+  'http://<server>:8080/update_data/<user_id>' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -H 'Token: <password>' \
@@ -33,13 +34,13 @@ $ curl -X 'PATCH' \
 ### Get user
 ```bash
 $ curl -X 'GET' \
-  'http://localhost:8080/api/v1/users/<user_id>' \
+  'http://<server>:8080/api/v1/users/<user_id>' \
   -H 'Token: <master_token>'
 ```
 
 ### Get current data for user
 ```shell
 $ curl -X 'GET' \
-  'http://localhost:8080/api/v1/get_cur_data/<user_id>' \
+  'http://<server>:8080/api/v1/get_data/<user_id>' \
   -H 'Token: <password>'
 ```
